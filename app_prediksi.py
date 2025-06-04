@@ -194,8 +194,8 @@ def set_background_and_style():
     table_cell_bg_color = "#FFFBDE"
     table_border_color = "#90D1CA"
 
-    # --- TAMBAHKAN URL RAW GAMBAR HEADER ANDA DI SINI ---
-    header_image_url = "https://raw.githubusercontent.com/IkmalKadafi/app_predict/main/Data/bg/header1.jpg" # GANTI DENGAN URL GAMBAR ANDA
+    # --- TAMBAHKAN URL RAW GAMBAR HEADER DI SINI ---
+    header_image_url = "https://raw.githubusercontent.com/IkmalKadafi/app_predict/main/Data/bg/header1.jpg" # GANTI DENGAN URL GAMBAR
 
     css = f"""
     <style>
