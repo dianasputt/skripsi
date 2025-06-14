@@ -87,18 +87,13 @@ def create_direct_multistep_dataset(X_data, y_data, lag=36, n_future=36):
         Y.append(Y_seq.flatten())
     return np.array(X), np.array(Y)
 
-def prediksi_direct(model, scaler_x, scaler_y, data_x, look_back=36, n_future=36):
-    """
-    Fungsi untuk direct multi-step prediction.
-    """
-    x_input = data_x[-look_back:]  # Ambil urutan terakhir
+def prediksi_direct(model, scaler_x, scaler_y, data_x, lag=36, n_future=36):
+    x_input = data_x[-lag:]  # Ambil urutan terakhir
     x_input_scaled = scaler_x.transform(x_input)
     x_input_scaled = np.expand_dims(x_input_scaled, axis=0)  # (1, look_back, n_features)
 
     y_pred_scaled = model.predict(x_input_scaled, verbose=0)  # (1, n_future)
-    y_pred_scaled = y_pred_scaled.reshape(-1, 1)
-
-    y_pred = scaler_y.inverse_transform(y_pred_scaled)
+    y_pred = scaler_y.inverse_transform(y_pred_scaled)  # Tetap (1, n_future)
     return y_pred
 
 def detect_seasons(y_pred, start_date, days_per_dasarian=10, threshold=50):
@@ -360,13 +355,13 @@ def main():
     model, data, scaler_x, scaler_y, zona = pilih_topografi()
     musim = pilih_musim()
     start_date = pd.to_datetime("2024-10-01")
-    look_back = 36
+    lag = 36
     n_future = 36
 
     if st.button("Prediksi Musim"):
         st.session_state["prediksi_ditekan"] = True
         X_all = data[['TAVG', 'FF_AVG']]
-        pred_array_rescaled = prediksi_direct(model, scaler_x, scaler_y, X_all, look_back=look_back, n_future=36)
+        pred_array_rescaled = prediksi_direct(model, scaler_x, scaler_y, X_all, look_back=lag, n_future=n_future)
         result = detect_seasons(pred_array_rescaled, start_date)
         
         # Tampilkan hasil deteksi
