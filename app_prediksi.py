@@ -21,9 +21,9 @@ data_303 = pd.read_excel("Data/data/data_303.xlsx")
 data_349 = pd.read_excel("Data/data/data_349.xlsx")
 
 # Load scalers
-scaler_x_311 = joblib.load('Data/scaler/scaler_x_311_2.pkl')
-scaler_x_303 = joblib.load('Data/scaler/scaler_x_303_3.pkl')
-scaler_x_349 = joblib.load('Data/scaler/scaler_x_349_5.pkl')
+scaler_x_311 = joblib.load('Data/scaler/scaler_X_311_2.pkl')
+scaler_x_303 = joblib.load('Data/scaler/scaler_X_303_3.pkl')
+scaler_x_349 = joblib.load('Data/scaler/scaler_X_349_5.pkl')
 
 scaler_y_311 = joblib.load('Data/scaler/scaler_y_311_2.pkl')
 scaler_y_303 = joblib.load('Data/scaler/scaler_y_303_3.pkl')
