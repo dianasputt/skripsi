@@ -360,8 +360,8 @@ def main():
 
     if st.button("Prediksi Musim"):
         st.session_state["prediksi_ditekan"] = True
-        X_all = data[['TAVG', 'FF_AVG']]
-        pred_array_rescaled = prediksi_direct(model, scaler_x, scaler_y, X_all, look_back=lag, n_future=n_future)
+        X_input = data[['TAVG', 'FF_AVG']]
+        pred_array_rescaled = prediksi_direct(model, scaler_x, scaler_y, X_input, lag=lag, n_future=n_future)
         result = detect_seasons(pred_array_rescaled, start_date)
         
         # Tampilkan hasil deteksi
