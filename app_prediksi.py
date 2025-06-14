@@ -11,9 +11,18 @@ st.set_page_config(
 )
 
 # Load model
-model_311 = tf.keras.models.load_model('Data/model/model_311_2.h5')
-model_303 = tf.keras.models.load_model('Data/model/model_303_3.h5')
-model_349 = tf.keras.models.load_model('Data/model/model_349_5.h5')
+model_311 = tf.keras.models.load_model(
+    'Data/model/model_311_2.h5',
+    custom_objects={'mse': tf.keras.losses.MeanSquaredError()}
+)
+model_303 = tf.keras.models.load_model(
+    'Data/model/model_303_3.h5',
+    custom_objects={'mse': tf.keras.losses.MeanSquaredError()}
+)
+model_349 = tf.keras.models.load_model(
+    'Data/model/model_349_5.h5',
+    custom_objects={'mse': tf.keras.losses.MeanSquaredError()}
+)
 
 # Load data
 data_311 = pd.read_excel("Data/data/data_311.xlsx")
