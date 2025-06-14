@@ -78,14 +78,19 @@ def create_direct_multistep_dataset(X_data, y_data, lag=36, n_future=36):
         Y.append(Y_seq.flatten())
     return np.array(X), np.array(Y)
 
-def prediksi_multistep(model, scaler_y, X_test_seq, y_test_seq):
-    y_pred = model.predict(X_test_seq, verbose=0)  # shape: (samples, n_future)
-    
-    y_pred_rescaled = scaler_y.inverse_transform(y_pred)
-    y_true_rescaled = scaler_y.inverse_transform(y_test_seq)
+def prediksi_direct(model, scaler_x, scaler_y, data_x, look_back=36, n_future=36):
+    """
+    Fungsi untuk direct multi-step prediction.
+    """
+    x_input = data_x[-look_back:]  # Ambil urutan terakhir
+    x_input_scaled = scaler_x.transform(x_input)
+    x_input_scaled = np.expand_dims(x_input_scaled, axis=0)  # (1, look_back, n_features)
 
-    return y_pred_rescaled, y_true_rescaled
+    y_pred_scaled = model.predict(x_input_scaled, verbose=0)  # (1, n_future)
+    y_pred_scaled = y_pred_scaled.reshape(-1, 1)
 
+    y_pred = scaler_y.inverse_transform(y_pred_scaled)
+    return y_pred
 
 def detect_seasons(y_pred, start_date, days_per_dasarian=10, threshold=50):
     y_pred = np.array(y_pred)
@@ -351,25 +356,10 @@ def main():
 
     if st.button("Prediksi Musim"):
         st.session_state["prediksi_ditekan"] = True
-
-        # Persiapkan input dan output
         X_all = data[['TAVG', 'FF_AVG']]
-        y_all = data[['RR']]
-
-        X_scaled = scaler_x.transform(X_all)
-        y_scaled = scaler_y.transform(y_all)
-
-        # Buat sequence multi-step direct
-        X_seq, y_seq = create_direct_multistep_dataset(X_scaled, y_scaled, lag=look_back, n_future=n_future)
-
-        # Prediksi langsung
-        y_pred_scaled = model.predict(X_seq, verbose=0)
-        y_pred = scaler_y.inverse_transform(y_pred_scaled)
-
-        # Deteksi musim dari prediksi terakhir
-        pred_final = y_pred[-1].reshape(-1, 1)
-        result = detect_seasons(pred_final, start_date)
-
+        pred_array_rescaled = prediksi_direct(model, scaler_x, scaler_y, X_all, look_back=look_back, n_future=36)
+        result = detect_seasons(pred_array_rescaled, start_date)
+        
         # Tampilkan hasil deteksi
         st.subheader("Hasil Deteksi Musim:")
         if musim == "Musim Hujan":
@@ -383,32 +373,18 @@ def main():
             st.write(f"Puncak   : {result['musim_kemarau']['puncak']}")
             st.write(f"Durasi   : {result['musim_kemarau']['durasi (dasarian)']} dasarian\n")
 
-        # Perbandingan dengan data normal
         normal_musim = {
             'musim_hujan': {
-                '303': {'awal': 'November III', 'akhir': 'April III', 'durasi': 16},
-                '311': {'awal': 'November I', 'akhir': 'April III', 'durasi': 18},
-                '349': {'awal': 'November II', 'akhir': 'Mei I', 'durasi': 18},
+                '303 (Dataran Rendah)': {'awal': 'November III', 'akhir': 'April III', 'durasi': 16},
+                '311 (Dataran Tinggi)': {'awal': 'November I', 'akhir': 'April III', 'durasi': 18},
+                '349 (Pesisir)': {'awal': 'November II', 'akhir': 'Mei I', 'durasi': 18},
             },
             'musim_kemarau': {
-                '303': {'awal': 'April III', 'akhir': 'November II', 'durasi': 21},
-                '311': {'awal': 'April III', 'akhir': 'Oktober III', 'durasi': 19},
-                '349': {'awal': 'Mei I', 'akhir': 'November I', 'durasi': 19},
+                '303 (Dataran Rendah)': {'awal': 'April III', 'akhir': 'November II', 'durasi': 21},
+                '311 (Dataran Tinggi)': {'awal': 'April III', 'akhir': 'Oktober III', 'durasi': 19},
+                '349 (Pesisir)': {'awal': 'Mei I', 'akhir': 'November I', 'durasi': 19},
             }
         }
-
-        zona_kode = zona.split()[0]  # Ekstrak '303', '311', atau '349'
-        st.subheader(f"Data Normal Musim Zona {zona_kode}")
-        st.write("Musim Hujan:")
-        st.write(f"Awal Normal  : {normal_musim['musim_hujan'][zona_kode]['awal']}")
-        st.write(f"Akhir Normal : {normal_musim['musim_hujan'][zona_kode]['akhir']}")
-        st.write(f"Durasi       : {normal_musim['musim_hujan'][zona_kode]['durasi']} dasarian\n")
-
-        st.write("Musim Kemarau:")
-        st.write(f"Awal Normal  : {normal_musim['musim_kemarau'][zona_kode]['awal']}")
-        st.write(f"Akhir Normal : {normal_musim['musim_kemarau'][zona_kode]['akhir']}")
-        st.write(f"Durasi       : {normal_musim['musim_kemarau'][zona_kode]['durasi']} dasarian")
-
 
         # Tampilkan data normal musim sesuai zona dan musim yang dipilih
         # Tampilkan data normal musim untuk SEMUA zona, tergantung musim yang dipilih
